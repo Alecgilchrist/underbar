@@ -37,9 +37,26 @@
 
   // Like first, but for the last elements. If n is undefined, return just the
   // last element.
-  _.last = function(array, n) {
+  _.last = function(array, num){
+       let result = [];
+      if(!Array.isArray(array) || num <= 0){
+          return [];
+      }
+      if(typeof num !== 'number'){
+          return array[array.length-1];
+      }
+      if(num > array.length){
+          return array;
+      }
 
-  };
+      else{
+          for(let i=array.length -1; i > 0; i--){
+          result.unshift(array[i])
+      }
+      return result
+      }
+
+  }
 
   // Call iterator(value, key, collection) for each element of collection.
   // Accepts both arrays and objects.
@@ -49,9 +66,15 @@
   _.each = function(collection, iterator) {
     if(Array.isArray(collection)){
     for (var i = 0; i < collection.length; i++) {
-      iterator(collection[i]);
+      iterator(collection[i], i, collection);
     };
   }
+    else{
+      for(var key in collection){
+        iterator(collection[key], key, collection)
+      }
+    }
+
   };
 
   // Returns the index at which value can be found in the array, or -1 if value
@@ -73,24 +96,48 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
-
+    let result = [];
+    _.each(collection, (element) => {
+      if(test(element)){
+        result.push(element);
+      }
+    })
+    return result;
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
+    let result = [];
+    _.each(collection, (element) => {
+      if(!test(element)){
+        result.push(element);
+      }
+    })
+    return result;
+  };
+
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
 
-  };
 
   // Produce a duplicate-free version of the array.
-  _.uniq = function(array) {
-
-  };
-
+  _.uniq = function(arr) {
+    let unique = []
+    _.each(arr, function(value,i,collection){
+         if(_.indexOf(unique, value) < 0){
+            unique.push(value)
+         }
+    })
+    return unique
+  }
 
   // Return the results of applying an iterator to each element.
   _.map = function(collection, iterator) {
+    let result = [];
+    _.each(collection, (element) => {
+      result.push(iterator(element));
+    })
+    return result;
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
@@ -136,8 +183,15 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-
-  };
+    _.each(collection, function(element, i, collection){
+        if(accumulator !== undefined){
+            accumulator = iterator(accumulator, collection[i], i)
+        }else{
+            accumulator = collection[0];
+        }
+    })
+    return accumulator
+};
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
@@ -155,15 +209,31 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    return _.reduce(collection, (accumulator, element) => {
+      if(iterator === undefined){
+        iterator = _.identity
+      }
+      if(!iterator(element)){
+         accumulator = false
+      }
+      return accumulator
+    }, true)
 
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
+    if(iterator === undefined){
+      iterator = _.identity
+    }
+    return !(_.every(collection, (element) => {
+        return !iterator(element);
+    }));
+}
     // TIP: There's a very clever way to re-use every() here.
 
-  };
+
 
 
   /**
@@ -185,7 +255,19 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var objects = arguments;
+    var length = objects.length;
 
-  };
+    for (let i = 1; i < length; i++) {
+        for (let key in objects[i]) {
+            let currentObj = arguments[i];
+            obj[key] = currentObj[key];
+        }
+
+    }
+
+    return obj;
+    };
+
 
 }());
